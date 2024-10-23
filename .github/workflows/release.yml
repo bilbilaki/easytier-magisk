@@ -1,0 +1,36 @@
+name: release
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - name: 1. 准备文件
+        run: |
+          echo "version=$(cat $GITHUB_WORKSPACE/module_src/module.prop | grep -w version | cut -d"=" -f2)" >> $GITHUB_ENV
+          echo "versionCode=$(cat $GITHUB_WORKSPACE/module_src/module.prop | grep -w versionCode | cut -d"=" -f2)" >> $GITHUB_ENV
+          mv $GITHUB_WORKSPACE/bin $GITHUB_WORKSPACE/module_src
+          mv $GITHUB_WORKSPACE/misc $GITHUB_WORKSPACE/module_src
+      - name: 2. 制作模块
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE"/GithubRelease
+          cd $GITHUB_WORKSPACE/module_src
+          zip -q -r easytier-magisk.zip *
+          mv $GITHUB_WORKSPACE/module_src/easytier-magisk.zip "$GITHUB_WORKSPACE"/GithubRelease
+          cd "$GITHUB_WORKSPACE"
+          touch file.md
+          echo "easytier-magisk.zip" > file.md
+      - name: 3.上传到Github Release
+        uses: ncipollo/release-action@main
+        with:
+          artifacts: ${{ github.workspace }}/GithubRelease/*
+          name: "easytier-magisk ${{ env.version }}"
+          tag: "${{ env.version }}"
+          bodyFile: "${{ github.workspace }}/file.md"
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          makeLatest: true

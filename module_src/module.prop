@@ -1,0 +1,6 @@
+id=easytier-magisk
+name=easytier for magisk
+version=v2.0.3
+versionCode=19
+author=cheng1nuo
+description=A simple, decentralized mesh VPN with WireGuard support.
